@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stopwatch Counter Pro</title>
+  <link rel="stylesheet" href="popup.css">
+  <!-- FileSaver.js for CSV export (local version) -->
+  <script src="lib/FileSaver.min.js"></script>
+  <!-- Chart.js for visualization (UMD version only) -->
+  <script src="lib/chart.min.js"></script>
+  <!-- Database operations -->
+  <script src="database.js"></script>
+</head>
+<body>
+  <!-- Header with gradient background -->
+  <div class="header">
+    <h1 class="header-title">Stopwatch Counter Pro</h1>
+    <p class="header-subtitle">Track time and tally counts with precision</p>
+  </div>
+
+  <div class="container">
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+      <div class="tab active" data-tab="stopwatch">Stopwatch</div>
+      <div class="tab" data-tab="counters">Counters</div>
+      <div class="tab" data-tab="charts">Charts</div>
+      <div class="tab" data-tab="sessions">Sessions</div>
+    </div>
+    
+    <!-- Background Running Banner -->
+    <div class="background-running-banner" id="background-banner">
+      <span class="status-indicator" id="background-indicator"></span>
+      <span>Stopwatch runs in background even when popup is closed</span>
+    </div>
+    
+    <!-- Stopwatch Section -->
+    <div class="tab-content" id="stopwatch-section">
+      <div class="stopwatch" id="stopwatch-display">
+        <div class="time">
+          <span class="time-part" id="hours">00</span><span class="colon">:</span><span class="time-part" id="minutes">00</span><span class="colon">:</span><span class="time-part" id="seconds">00</span><span class="milliseconds" id="milliseconds">00</span>
+        </div>
+        <div class="stopwatch-controls">
+          <button id="start-stop" class="control-btn start">Start</button>
+          <button id="reset" class="control-btn reset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tally Counters Section -->
+    <div class="tab-content hidden" id="counters-section">
+      <div class="counters-section">
+        <h2 class="section-title">Your Counters</h2>
+        <div id="counters-container" class="counters-container"></div>
+        <div class="add-counter-form">
+          <input type="text" id="counter-name" placeholder="Enter counter name">
+          <button id="add-counter" class="add-btn">Add Counter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Visualization Section -->
+    <div class="tab-content hidden" id="charts-section">
+      <div class="chart-section">
+        <h2 class="section-title">Data Visualization</h2>
+        <div class="chart-options">
+          <select id="chart-type" class="chart-type-select">
+            <option value="bar">Bar Chart</option>
+            <option value="line">Line Chart</option>
+            <option value="pie">Pie Chart</option>
+            <option value="polarArea">Polar Area</option>
+            <option value="radar">Radar Chart</option>
+          </select>
+          <div class="chart-actions">
+            <button id="compare-chart" class="chart-btn">Time vs Counter Comparison</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="counter-chart"></canvas>
+        </div>
+      </div>
+      
+      <!-- Export Section -->
+      <div class="export-section">
+        <button id="export-csv" class="chart-btn">Export to CSV</button>
+      </div>
+    </div>
+
+    <!-- Session Management Section -->
+    <div class="tab-content hidden" id="sessions-section">
+      <div class="sessions-section">
+        <h2 class="section-title">Session Management</h2>
+        <div class="session-btn-container">
+          <button id="save-session" class="session-btn">Save Current Session</button>
+          <button id="view-history" class="session-btn">View Session History</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- History Modal -->
+  <div id="history-modal" class="history-modal hidden">
+    <div class="history-modal-content">
+      <span class="close-btn" id="close-modal">&times;</span>
+      <h2>Session History</h2>
+      <ul class="session-list" id="session-list"></ul>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>&copy; 2025 Stopwatch Counter Pro</p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

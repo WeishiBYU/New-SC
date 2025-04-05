@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stopwatch Counter Pro - Chrome Extension</title>
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --success-color: #4bc0c0;
+      --danger-color: #ef476f;
+      --light-bg: #f8f9fa;
+      --dark-bg: #313236;
+      --text-color: #212529;
+      --text-light: #6c757d;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--text-color);
+      background-color: var(--light-bg);
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .tagline {
+      color: var(--text-light);
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+
+    .feature-card {
+      background-color: white;
+      border-radius: var(--border-radius);
+      padding: 25px;
+      box-shadow: var(--box-shadow);
+      transition: var(--transition);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+    }
+
+    .feature-card h3 {
+      color: var(--secondary-color);
+      margin-top: 0;
+      font-size: 1.3rem;
+    }
+
+    .installation {
+      background-color: white;
+      border-radius: var(--border-radius);
+      padding: 30px;
+      box-shadow: var(--box-shadow);
+      margin-bottom: 50px;
+    }
+
+    .installation h2 {
+      color: var(--secondary-color);
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .steps {
+      list-style-type: none;
+      counter-reset: step-counter;
+      padding: 0;
+    }
+
+    .steps li {
+      position: relative;
+      padding-left: 50px;
+      margin-bottom: 25px;
+      counter-increment: step-counter;
+    }
+
+    .steps li::before {
+      content: counter(step-counter);
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border-radius: 50%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .download-btn {
+      display: inline-block;
+      background-color: var(--primary-color);
+      color: white;
+      text-decoration: none;
+      padding: 12px 25px;
+      border-radius: 30px;
+      font-weight: 600;
+      margin-top: 20px;
+      transition: var(--transition);
+    }
+
+    .download-btn:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .screenshots {
+      margin-bottom: 50px;
+    }
+
+    .screenshots h2 {
+      color: var(--secondary-color);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .screenshot-img {
+      width: 100%;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-bottom: 15px;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-light);
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #dee2e6;
+    }
+
+    pre {
+      background-color: var(--dark-bg);
+      color: white;
+      padding: 15px;
+      border-radius: var(--border-radius);
+      overflow-x: auto;
+    }
+
+    code {
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    @media (max-width: 768px) {
+      .features {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Stopwatch Counter Pro</h1>
+      <p class="tagline">Professional time tracking with customizable counters, data visualization, persistent data storage, and data export</p>
+    </header>
+
+    <section class="features">
+      <div class="feature-card">
+        <div class="feature-icon">⏱️</div>
+        <h3>Precise Stopwatch</h3>
+        <p>Track time with millisecond precision. Easy-to-use interface with start, stop, and reset functionality.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🔢</div>
+        <h3>Customizable Counters</h3>
+        <p>Create unlimited tally counters to track anything you need alongside your timing session.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Data Visualization</h3>
+        <p>View your counter data in multiple chart formats including bar, line, and pie charts for quick analysis.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">💾</div>
+        <h3>Session Management</h3>
+        <p>Save and load different sessions to continue your work or compare previous results.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">📤</div>
+        <h3>Export Data</h3>
+        <p>Export your timing and counter data to CSV for further analysis in spreadsheet applications.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Data Comparison</h3>
+        <p>Compare counter values across different timing sessions with the built-in comparison chart.</p>
+      </div>
+    </section>
+
+    <section class="installation">
+      <h2>Installation Instructions</h2>
+      <ol class="steps">
+        <li>Download the extension zip file using the button below.</li>
+        <li>Unzip the downloaded file to a folder on your computer.</li>
+        <li>Open Chrome and navigate to <code>chrome://extensions</code>.</li>
+        <li>Enable "Developer mode" by toggling the switch in the top-right corner.</li>
+        <li>Click "Load unpacked" and select the folder where you unzipped the extension.</li>
+        <li>The Stopwatch Counter Pro extension should now appear in your browser toolbar!</li>
+      </ol>
+      
+      <a href="stopwatch-counter-extension.zip" download class="download-btn">
+        Download Extension (.zip)
+      </a>
+    </section>
+
+    <section class="usage">
+      <h2>How to Use</h2>
+      
+      <h3>Stopwatch</h3>
+      <p>Click the "Start" button to begin timing. The stopwatch will continue to run even if you close the popup. Click "Stop" to pause timing and "Reset" to clear the stopwatch.</p>
+      
+      <h3>Creating Counters</h3>
+      <p>Enter a name in the "Enter counter name" field and click "Add Counter." Use the + and - buttons to increment or decrement the counter. The trash icon removes a counter.</p>
+      
+      <h3>Data Visualization</h3>
+      <p>Your counter values are automatically visualized in the chart area. Use the dropdown to switch between different chart types.</p>
+      
+      <h3>Comparing Data</h3>
+      <p>Click the "Compare" button to see a comparison chart that shows counter values versus time.</p>
+      
+      <h3>Exporting Data</h3>
+      <p>Click the "Export to CSV" button to download your counter data in CSV format.</p>
+      
+      <h3>Session Management</h3>
+      <p>Use "Save Session" to store your current stopwatch time and counter data. "View History" allows you to see and load previous sessions.</p>
+    </section>
+
+    <footer>
+      <p>Stopwatch Counter Pro v1.3 - Built by Replit</p>
+    </footer>
+  </div>
+</body>
+</html>
