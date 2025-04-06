@@ -10,10 +10,8 @@ let counters = [];
 // Flag to track if data has been modified
 let dataModified = false;
 
-// Initialize the Chart.js charts
+// Initialize the Chart.js chart
 let counterChart = null;
-let comparisonChart = null;
-let currentChartType = 'bar'; // Track current chart type
 
 // DOM Elements
 document.addEventListener('DOMContentLoaded', async function() {
@@ -35,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('view-history').addEventListener('click', viewSessionHistory);
   document.getElementById('chart-type').addEventListener('change', changeChartType);
   document.getElementById('compare-chart').addEventListener('click', showComparisonChart);
-  document.getElementById('chart-type').value = currentChartType;
   
   // Close button for history modal
   const closeModal = document.getElementById('close-modal');
@@ -962,62 +959,16 @@ function initializeChartDisplay() {
 }
 
 // Update the chart with current counter data
-function updateChart(forceType = null) {
-  const chartType = forceType || currentChartType;
+function updateChart() {
+  if (!counterChart) return;
   
-  if (chartType === 'comparison') {
-    updateComparisonChart();
-    return;
-  }
-
-  if (!counterChart) {
-    const ctx = document.getElementById('counter-chart').getContext('2d');
-    counterChart = createBasicChart(ctx, chartType);
-  }
-
   const labels = counters.map(counter => counter.name);
   const data = counters.map(counter => counter.value);
   
-  counterChart.config.type = chartType;
   counterChart.data.labels = labels;
   counterChart.data.datasets[0].data = data;
   
   // Ensure we have enough colors
-  const { backgroundColor, borderColor } = generateChartColors(labels.length);
-  counterChart.data.datasets[0].backgroundColor = backgroundColor;
-  counterChart.data.datasets[0].borderColor = borderColor;
-  
-  counterChart.update();
-}
-
-// Create basic chart
-function createBasicChart(ctx, type) {
-  return new Chart(ctx, {
-    type: type,
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'Counter Values',
-        data: [],
-        backgroundColor: [],
-        borderColor: [],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
-    }
-  });
-}
-
-// Generate chart colors
-function generateChartColors(count) {
   const backgroundColor = [];
   const borderColor = [];
   
@@ -1034,43 +985,32 @@ function generateChartColors(count) {
     [50, 205, 50]     // Lime Green
   ];
   
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < labels.length; i++) {
     const colorIndex = i % baseColors.length;
     const [r, g, b] = baseColors[colorIndex];
     backgroundColor.push(`rgba(${r}, ${g}, ${b}, 0.7)`);
     borderColor.push(`rgba(${r}, ${g}, ${b}, 1)`);
   }
   
-  return { backgroundColor, borderColor };
+  counterChart.data.datasets[0].backgroundColor = backgroundColor;
+  counterChart.data.datasets[0].borderColor = borderColor;
+  
+  counterChart.update();
 }
 
 // Change chart type
 function changeChartType() {
   const chartType = document.getElementById('chart-type').value;
-  currentChartType = chartType;
   
-  if (chartType === 'comparison') {
-    if (counterChart) {
-      counterChart.destroy();
-      counterChart = null;
-    }
-    updateComparisonChart();
-  } else {
-    if (comparisonChart) {
-      comparisonChart.destroy();
-      comparisonChart = null;
-    }
-    updateChart(chartType);
+  if (counterChart) {
+    counterChart.config.type = chartType;
+    counterChart.update();
   }
 }
 
-// Update comparison chart
-async function updateComparisonChart() {
+// Show comparison chart (Time vs Counter)
+async function showComparisonChart() {
   try {
-    if (comparisonChart) {
-      comparisonChart.destroy();
-    }
-
     let timeSeriesData = [];
     
     // Try to load time series data from Database API first
@@ -1084,7 +1024,7 @@ async function updateComparisonChart() {
       }
     }
     
-    // Fallback to direct IndexedDB if needed
+    // Fallback to direct IndexedDB if needed or if no data was retrieved
     if (!timeSeriesData || timeSeriesData.length === 0) {
       try {
         const db = await openDatabase();
@@ -1097,122 +1037,121 @@ async function updateComparisonChart() {
       }
     }
     
+    // Check if we have data to display
     if (!timeSeriesData || timeSeriesData.length === 0) {
       alert('No time series data available. Try incrementing or decrementing your counters to generate data.');
       return;
     }
     
-    // Group and process the data
-    const counterData = processTimeSeriesData(timeSeriesData);
+    // Group data by counter name
+    const counterData = {};
     
-    // Create the chart
+    // Process time series data
+    timeSeriesData.forEach(entry => {
+      if (!counterData[entry.counterName]) {
+        counterData[entry.counterName] = [];
+      }
+      
+      counterData[entry.counterName].push({
+        x: entry.elapsedTime, // Use elapsed time for x-axis
+        y: entry.value,
+        timestamp: new Date(entry.timestamp)
+      });
+    });
+    
+    // Sort data points by elapsed time for each counter
+    Object.keys(counterData).forEach(counterName => {
+      counterData[counterName].sort((a, b) => a.x - b.x);
+    });
+    
+    // Create datasets for chart
+    const datasets = [];
+    const baseColors = [
+      [75, 192, 192],   // Teal
+      [54, 162, 235],   // Blue
+      [255, 206, 86],   // Yellow
+      [255, 99, 132],   // Red
+      [153, 102, 255],  // Purple
+      [255, 159, 64]    // Orange
+    ];
+    
+    Object.keys(counterData).forEach((counterName, index) => {
+      const colorIndex = index % baseColors.length;
+      const [r, g, b] = baseColors[colorIndex];
+      
+      datasets.push({
+        label: counterName,
+        data: counterData[counterName],
+        borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
+        backgroundColor: `rgba(${r}, ${g}, ${b}, 0.1)`,
+        fill: false,
+        tension: 0.1
+      });
+    });
+    
+    // Update chart
+    if (counterChart) {
+      counterChart.destroy();
+    }
+    
     const ctx = document.getElementById('counter-chart').getContext('2d');
-    comparisonChart = createComparisonChart(ctx, counterData);
+    counterChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            type: 'linear',
+            position: 'bottom',
+            title: {
+              display: true,
+              text: 'Elapsed Time (seconds)'
+            },
+            ticks: {
+              callback: function(value) {
+                // Convert milliseconds to seconds for display
+                return (value / 1000).toFixed(1) + 's';
+              }
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Counter Value'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: function(tooltipItems) {
+                const item = tooltipItems[0];
+                const dataPoint = item.raw;
+                return `Time: ${formatElapsedTime(dataPoint.x)}`;
+              },
+              label: function(context) {
+                const dataPoint = context.raw;
+                return `${context.dataset.label}: ${dataPoint.y}`;
+              },
+              afterLabel: function(context) {
+                const dataPoint = context.raw;
+                return `Date: ${dataPoint.timestamp.toLocaleString()}`;
+              }
+            }
+          }
+        }
+      }
+    });
     
   } catch (error) {
     console.error('Error generating comparison chart:', error);
     alert('Error generating comparison chart: ' + error.message);
   }
-}
-
-// Process time series data for comparison chart
-function processTimeSeriesData(timeSeriesData) {
-  const counterData = {};
-  
-  timeSeriesData.forEach(entry => {
-    if (!counterData[entry.counterName]) {
-      counterData[entry.counterName] = [];
-    }
-    
-    counterData[entry.counterName].push({
-      x: entry.elapsedTime,
-      y: entry.value,
-      timestamp: new Date(entry.timestamp)
-    });
-  });
-  
-  // Sort data points by elapsed time for each counter
-  Object.keys(counterData).forEach(counterName => {
-    counterData[counterName].sort((a, b) => a.x - b.x);
-  });
-  
-  return counterData;
-}
-
-// Create comparison chart
-function createComparisonChart(ctx, counterData) {
-  const baseColors = [
-    [75, 192, 192],   // Teal
-    [54, 162, 235],   // Blue
-    [255, 206, 86],   // Yellow
-    [255, 99, 132],   // Red
-    [153, 102, 255],  // Purple
-    [255, 159, 64]    // Orange
-  ];
-  
-  const datasets = Object.keys(counterData).map((counterName, index) => {
-    const colorIndex = index % baseColors.length;
-    const [r, g, b] = baseColors[colorIndex];
-    
-    return {
-      label: counterName,
-      data: counterData[counterName],
-      borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.1)`,
-      fill: false,
-      tension: 0.1
-    };
-  });
-  
-  return new Chart(ctx, {
-    type: 'line',
-    data: { datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          type: 'linear',
-          position: 'bottom',
-          title: {
-            display: true,
-            text: 'Elapsed Time (seconds)'
-          },
-          ticks: {
-            callback: function(value) {
-              return (value / 1000).toFixed(1) + 's';
-            }
-          }
-        },
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Counter Value'
-          }
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            title: function(tooltipItems) {
-              const item = tooltipItems[0];
-              const dataPoint = item.raw;
-              return `Time: ${formatElapsedTime(dataPoint.x)}`;
-            },
-            label: function(context) {
-              const dataPoint = context.raw;
-              return `${context.dataset.label}: ${dataPoint.y}`;
-            },
-            afterLabel: function(context) {
-              const dataPoint = context.raw;
-              return `Date: ${dataPoint.timestamp.toLocaleString()}`;
-            }
-          }
-        }
-      }
-    }
-  });
 }
 
 // Format elapsed time for display (HH:MM:SS)
